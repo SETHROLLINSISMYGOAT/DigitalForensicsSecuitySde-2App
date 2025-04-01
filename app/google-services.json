@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "824148466297",
+    "firebase_url": "https://quickscan-goat-antivirus-default-rtdb.firebaseio.com",
+    "project_id": "quickscan-goat-antivirus",
+    "storage_bucket": "quickscan-goat-antivirus.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:824148466297:android:bc3340cd2eb68028f592a8",
+        "android_client_info": {
+          "package_name": "com.example.bigtimeeegoantivirus"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA8y7QyFIhbET_QLTeekGFJnw936MeS5K0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
