@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/mainLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="@drawable/dark_blue_gradient">
+
+    <TextView
+        android:id="@+id/ssidText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="SSID: "
+        android:textSize="18sp"
+        android:textColor="@android:color/white"
+        android:layout_marginBottom="12dp" />
+
+    <TextView
+        android:id="@+id/ipText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Local IP: "
+        android:textSize="18sp"
+        android:textColor="@android:color/white"
+        android:layout_marginBottom="12dp" />
+
+    <TextView
+        android:id="@+id/securityText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Security: "
+        android:textSize="18sp"
+        android:textColor="@android:color/white"
+        android:layout_marginBottom="12dp" />
+
+    <TextView
+        android:id="@+id/publicIpText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Public IP: "
+        android:textSize="18sp"
+        android:textColor="@android:color/white"
+        android:layout_marginBottom="24dp" />
+
+    <Button
+        android:id="@+id/refreshButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Refresh Info"
+        android:backgroundTint="@android:color/holo_blue_light"
+        android:textColor="@android:color/white" />
+
+
+</LinearLayout>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="#33FFFFFF">
+    <item>
+        <layer-list>
+            <!-- Outer Glow -->
+            <item>
+                <shape android:shape="rectangle">
+                    <corners android:radius="25dp"/>
+                    <solid android:color="#002266"/>
+                </shape>
+            </item>
+
+            <!-- Inner Gradient -->
+            <item>
+                <shape android:shape="rectangle">
+                    <corners android:radius="25dp"/>
+                    <gradient
+                        android:angle="45"
+                        android:startColor="#0044CC"
+                        android:endColor="#0088FF"
+                        android:type="linear"/>
+                </shape>
+            </item>
+
+            <!-- Stroke (Border) -->
+            <item>
+                <shape android:shape="rectangle">
+                    <corners android:radius="25dp"/>
+                    <stroke android:width="3dp" android:color="#55AAFF"/>
+                </shape>
+            </item>
+        </layer-list>
+    </item>
+</ripple>

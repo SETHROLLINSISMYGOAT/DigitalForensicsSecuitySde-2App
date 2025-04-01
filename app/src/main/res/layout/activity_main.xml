@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@drawable/gradient_bg">
+
+    <TextView
+        android:id="@+id/titleFiles"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="FILE MANAGER"
+        android:gravity="center"
+        android:textColor="#000000"
+        android:textSize="24sp"
+        android:textStyle="bold" />
+
+    <EditText
+        android:id="@+id/searchFiles"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:hint="🔍 Search Files..."
+        android:padding="12dp"
+        android:background="@drawable/search_bar"
+        android:textColor="#000000"
+        android:textSize="16sp"
+        android:drawablePadding="8dp"
+        android:layout_marginBottom="16dp" />
+
+    <GridLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:columnCount="2"
+        android:padding="8dp"
+        android:orientation="horizontal"
+        android:rowCount="4"
+        android:alignmentMode="alignBounds"
+        android:layout_gravity="center">
+
+        <Button
+            android:id="@+id/btnImages"
+            android:layout_width="0dp"
+            android:layout_height="80dp"
+            android:layout_margin="8dp"
+            android:layout_columnWeight="1"
+            android:text="🖼 Images"
+            android:textSize="16sp"
+            android:background="@drawable/button_grey"
+            android:textColor="#000000" />
+
+        <Button
+            android:id="@+id/btnVideos"
+            android:layout_width="0dp"
+            android:layout_height="80dp"
+            android:layout_margin="8dp"
+            android:layout_columnWeight="1"
+            android:text="📹 Videos"
+            android:textSize="16sp"
+            android:background="@drawable/button_grey"
+            android:textColor="#000000" />
+
+        <Button
+            android:id="@+id/btnAudio"
+            android:layout_width="0dp"
+            android:layout_height="80dp"
+            android:layout_margin="8dp"
+            android:layout_columnWeight="1"
+            android:text="🎵 Audio"
+            android:textSize="16sp"
+            android:background="@drawable/button_grey"
+            android:textColor="#000000" />
+
+        <Button
+            android:id="@+id/btnDocuments"
+            android:layout_width="0dp"
+            android:layout_height="80dp"
+            android:layout_margin="8dp"
+            android:layout_columnWeight="1"
+            android:text="📑 Documents"
+            android:textSize="16sp"
+            android:background="@drawable/button_grey"
+            android:textColor="#000000" />
+
+        <Button
+            android:id="@+id/btnApps"
+            android:layout_width="0dp"
+            android:layout_height="80dp"
+            android:layout_margin="8dp"
+            android:layout_columnWeight="1"
+            android:text="📦 Installed Apps"
+            android:textSize="16sp"
+            android:background="@drawable/button_grey"
+            android:textColor="#000000" />
+
+        <Button
+            android:id="@+id/btnRecentFiles"
+            android:layout_width="0dp"
+            android:layout_height="80dp"
+            android:layout_margin="8dp"
+            android:layout_columnWeight="1"
+            android:text="🕒 Recent Files"
+            android:textSize="16sp"
+            android:background="@drawable/button_grey"
+            android:textColor="#000000" />
+
+        <Button
+            android:id="@+id/btnLargeFiles"
+            android:layout_width="0dp"
+            android:layout_height="80dp"
+            android:layout_margin="8dp"
+            android:layout_columnWeight="1"
+            android:text="📦 Large Files"
+            android:textSize="16sp"
+            android:background="@drawable/button_grey"
+            android:textColor="#000000" />
+
+        <Button
+            android:id="@+id/btnHiddenFiles"
+            android:layout_width="0dp"
+            android:layout_height="80dp"
+            android:layout_margin="8dp"
+            android:layout_columnWeight="1"
+            android:text="🔒HiddenFiles"
+            android:textSize="16sp"
+            android:background="@drawable/button_grey"
+            android:textColor="#000000" />
+
+    </GridLayout>
+
+    <Button
+        android:id="@+id/btnAdvancedSecurity"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginTop="20dp"
+        android:text="🛡 Advanced Security"
+        android:textSize="18sp"
+        android:background="@drawable/button_red"
+        android:textColor="#FFFFFF" />
+
+    <TextView
+        android:id="@+id/deviceStorageText"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:text="📂 Device Storage"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="#FFFFFF"
+        android:gravity="center"
+        android:padding="12dp"
+        android:background="@drawable/storage_oval"
+        android:layout_marginTop="20dp" />
+
+</LinearLayout>
