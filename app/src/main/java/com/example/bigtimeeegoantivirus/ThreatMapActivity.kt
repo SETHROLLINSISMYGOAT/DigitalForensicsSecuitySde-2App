@@ -2,23 +2,19 @@ package com.example.bigtimeeegoantivirus
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.os.Bundle
-import android.os.Environment
+import android.os.*
 import android.util.Log
 import android.view.View
-import android.widget.Button
-import android.widget.ProgressBar
-import android.widget.TextView
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import okhttp3.*
 import org.json.JSONObject
-import java.io.File
-import java.io.FileInputStream
-import java.io.IOException
+import java.io.*
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
+import java.util.concurrent.CountDownLatch
 
 class ThreatMapActivity : AppCompatActivity() {
 
@@ -58,12 +54,10 @@ class ThreatMapActivity : AppCompatActivity() {
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == 1) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
-                threatMap()
-            } else {
-                Log.e("Permissions", "Permissions not granted.")
-            }
+        if (requestCode == 1 && grantResults.isNotEmpty() &&
+            grantResults[0] == PackageManager.PERMISSION_GRANTED &&
+            grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+            threatMap()
         }
     }
 
@@ -73,68 +67,87 @@ class ThreatMapActivity : AppCompatActivity() {
         startScanButton.isEnabled = false
 
         Thread {
-            val directory = Environment.getExternalStorageDirectory()
-            val files = directory.listFiles()
-            var totalFiles = 0
+            val rootDir = Environment.getExternalStorageDirectory()
+            val allFiles = mutableListOf<File>()
+            getAllFilesRecursive(rootDir, allFiles)
+
+            val totalFiles = allFiles.size
             var filesScanned = 0
             var maliciousFiles = 0
 
-            if (files != null && files.isNotEmpty()) {
-                totalFiles = files.size
-
-                files.forEach { file ->
-                    if (file.canRead()) {
-                        val fileHash = getFileHash(file)
-                        if (fileHash != null) {
-                            checkWithVirusTotal(fileHash, file.name) { isMalicious ->
-                                if (isMalicious) {
-                                    maliciousFiles++
-                                }
-                                filesScanned++
-                                updateScanProgress(filesScanned, totalFiles, maliciousFiles)
-                            }
-                        }
-                    } else {
-                        filesScanned++
-                        updateScanProgress(filesScanned, totalFiles, maliciousFiles)
-                    }
-                    Thread.sleep(200)
-                }
-            } else {
+            if (totalFiles == 0) {
                 runOnUiThread {
-                    textView.text = "No files found in the directory."
+                    textView.text = "No files found in storage."
                     progressBar.visibility = View.GONE
                 }
                 return@Thread
             }
 
+            val latch = CountDownLatch(totalFiles)
+
+            for (file in allFiles) {
+                val fileHash = getFileHash(file)
+                if (fileHash != null) {
+                    checkWithVirusTotal(fileHash, file.name) { isMalicious ->
+                        if (isMalicious) {
+                            synchronized(this) { maliciousFiles++ }
+                        }
+                        synchronized(this) {
+                            filesScanned++
+                            updateScanProgress(filesScanned, totalFiles, maliciousFiles)
+                        }
+                        latch.countDown()
+                    }
+                } else {
+                    synchronized(this) {
+                        filesScanned++
+                        updateScanProgress(filesScanned, totalFiles, maliciousFiles)
+                    }
+                    latch.countDown()
+                }
+
+                Thread.sleep(200)
+            }
+
+            latch.await()
+
             runOnUiThread {
                 progressBar.visibility = View.GONE
                 textView.text = "Scan Complete"
-                if (maliciousFiles > 0) {
-                    scanResult.text = "$maliciousFiles Malicious files detected."
+                scanResult.text = if (maliciousFiles > 0) {
+                    "$maliciousFiles malicious files detected."
                 } else {
-                    scanResult.text = "No malicious files detected."
+                    "No malicious files detected."
                 }
                 startScanButton.isEnabled = true
             }
         }.start()
     }
 
+    private fun getAllFilesRecursive(dir: File, fileList: MutableList<File>) {
+        if (!dir.isDirectory || !dir.canRead()) return
+        val files = dir.listFiles() ?: return
+        for (file in files) {
+            if (file.isDirectory) {
+                getAllFilesRecursive(file, fileList)
+            } else {
+                fileList.add(file)
+            }
+        }
+    }
+
     private fun getFileHash(file: File): String? {
         return try {
             val md = MessageDigest.getInstance("SHA-256")
             val fis = FileInputStream(file)
-            val bytes = ByteArray(1024)
+            val buffer = ByteArray(1024)
             var bytesRead: Int
-            while (fis.read(bytes).also { bytesRead = it } != -1) {
-                md.update(bytes, 0, bytesRead)
+            while (fis.read(buffer).also { bytesRead = it } != -1) {
+                md.update(buffer, 0, bytesRead)
             }
             val hashBytes = md.digest()
             hashBytes.joinToString("") { "%02x".format(it) }
-        } catch (e: IOException) {
-            null
-        } catch (e: NoSuchAlgorithmException) {
+        } catch (e: Exception) {
             null
         }
     }
@@ -151,33 +164,25 @@ class ThreatMapActivity : AppCompatActivity() {
         val client = OkHttpClient()
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                runOnUiThread {
-                    Log.e("VirusTotal", "Error checking file: $e")
-                }
+                Log.e("VirusTotal", "Network error: $e")
                 callback(false)
             }
 
             override fun onResponse(call: Call, response: Response) {
-                if (response.isSuccessful) {
-                    val jsonResponse = JSONObject(response.body?.string())
-                    val data = jsonResponse.getJSONObject("data")
-                    val attributes = data.getJSONObject("attributes")
-                    val lastAnalysisStats = attributes.getJSONObject("last_analysis_stats")
-                    val maliciousCount = lastAnalysisStats.getInt("malicious")
-
-                    if (maliciousCount > 0) {
-                        runOnUiThread {
-                            Log.i("VirusTotal", "File '$fileName' is malicious.")
-                        }
-                        callback(true)
-                    } else {
+                response.use {
+                    if (!it.isSuccessful) {
                         callback(false)
+                        return
                     }
-                } else {
-                    runOnUiThread {
-                        Log.e("VirusTotal", "Error: ${response.code}")
-                    }
-                    callback(false)
+
+                    val json = JSONObject(it.body?.string() ?: "")
+                    val stats = json
+                        .optJSONObject("data")
+                        ?.optJSONObject("attributes")
+                        ?.optJSONObject("last_analysis_stats")
+
+                    val malicious = stats?.optInt("malicious", 0) ?: 0
+                    callback(malicious > 0)
                 }
             }
         })
@@ -185,9 +190,8 @@ class ThreatMapActivity : AppCompatActivity() {
 
     private fun updateScanProgress(filesScanned: Int, totalFiles: Int, maliciousFiles: Int) {
         runOnUiThread {
-            val progress = (filesScanned / totalFiles.toFloat() * 100).toInt()
+            val progress = (filesScanned.toFloat() / totalFiles * 100).toInt()
             progressBar.progress = progress
-
             textView.text = "Scanned $filesScanned of $totalFiles files"
             scanResult.text = "Malicious Files: $maliciousFiles"
         }

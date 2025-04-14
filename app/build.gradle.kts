@@ -44,24 +44,28 @@ dependencies {
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.cronet.embedded)
+    implementation(libs.vision.common)
+    implementation(libs.play.services.mlkit.face.detection)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     implementation("com.android.volley:volley:1.2.1")
     implementation("com.squareup.okhttp3:okhttp:4.9.3")
-    implementation("androidx.biometric:biometric:1.2.0-alpha04")
+
     implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
     implementation("com.google.firebase:firebase-database-ktx")
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("androidx.core:core-ktx:1.9.0")
+    implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.google.firebase:firebase-firestore-ktx:24.4.0")
+    implementation("androidx.biometric:biometric:1.2.0-alpha04")
 
-    implementation("com.squareup.okhttp3:okhttp:4.9.3")
-    implementation("org.json:json:20210307")
-
-
-
-
-
+    implementation("com.google.ar.sceneform:filament-android:1.17.1")
 
 }
+
+
+
+
+

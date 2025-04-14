@@ -3,7 +3,7 @@
     android:color="#33FFFFFF">
     <item>
         <layer-list>
-            <!-- Outer Glow -->
+
             <item>
                 <shape android:shape="rectangle">
                     <corners android:radius="25dp"/>
@@ -11,7 +11,7 @@
                 </shape>
             </item>
 
-            <!-- Inner Gradient -->
+
             <item>
                 <shape android:shape="rectangle">
                     <corners android:radius="25dp"/>
@@ -23,7 +23,6 @@
                 </shape>
             </item>
 
-            <!-- Stroke (Border) -->
             <item>
                 <shape android:shape="rectangle">
                     <corners android:radius="25dp"/>

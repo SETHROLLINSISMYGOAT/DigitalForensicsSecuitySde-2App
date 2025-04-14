@@ -7,8 +7,15 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-class FileAdapter(private val fileList: List<FileItem>) :
-    RecyclerView.Adapter<FileAdapter.FileViewHolder>() {
+class FileAdapter(
+    private var fileList: List<FileItem>,
+    private val onItemClick: (FileItem) -> Unit
+) : RecyclerView.Adapter<FileAdapter.FileViewHolder>() {
+
+    fun updateList(newList: List<FileItem>) {
+        fileList = newList
+        notifyDataSetChanged()
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FileViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -27,6 +34,10 @@ class FileAdapter(private val fileList: List<FileItem>) :
         } else {
             holder.scanStatus.setImageResource(R.drawable.ic_warning)
             holder.scanStatus.setColorFilter(holder.itemView.context.getColor(android.R.color.holo_red_light))
+        }
+
+        holder.itemView.setOnClickListener {
+            onItemClick(file)
         }
     }
 

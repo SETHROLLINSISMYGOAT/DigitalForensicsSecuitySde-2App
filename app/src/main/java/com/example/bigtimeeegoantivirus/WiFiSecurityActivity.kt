@@ -2,12 +2,14 @@ package com.example.bigtimeeegoantivirus
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.LocationManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import android.net.wifi.WifiInfo
 import android.net.wifi.WifiManager
 import android.os.Bundle
+import android.provider.Settings
 import android.text.format.Formatter
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
@@ -16,9 +18,6 @@ import androidx.core.content.ContextCompat
 import com.android.volley.Request
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
-import java.net.InetAddress
-import java.net.NetworkInterface
-import java.net.SocketException
 
 class WiFiSecurityActivity : AppCompatActivity() {
 
@@ -50,16 +49,44 @@ class WiFiSecurityActivity : AppCompatActivity() {
 
     private fun checkPermissionsAndScan() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-            != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1)
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                1
+            )
         } else {
-            scanWiFi()
+            if (!isLocationEnabled()) {
+                Toast.makeText(
+                    this,
+                    "Please turn on location to access WiFi info",
+                    Toast.LENGTH_LONG
+                ).show()
+                startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+            } else {
+                scanWiFi()
+            }
         }
+    }
+
+    private fun isLocationEnabled(): Boolean {
+        val locationManager =
+            getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+                || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     }
 
     private fun scanWiFi() {
         val wifiInfo = wifiManager.connectionInfo
-        val ssid = wifiInfo.ssid.removePrefix("\"").removeSuffix("\"")
+
+        val rawSsid = wifiInfo.ssid
+        val ssid = if (rawSsid != null && rawSsid != "<unknown ssid>") {
+            rawSsid.removePrefix("\"").removeSuffix("\"")
+        } else {
+            "SSID not available"
+        }
+
         val localIp = Formatter.formatIpAddress(wifiInfo.ipAddress)
 
         ssidText.text = "SSID: $ssid"
@@ -68,7 +95,6 @@ class WiFiSecurityActivity : AppCompatActivity() {
 
         checkSecurityLevel()
         fetchPublicIp()
-        detectRogueDevices()
     }
 
     private fun checkSecurityLevel() {
@@ -101,27 +127,17 @@ class WiFiSecurityActivity : AppCompatActivity() {
         queue.add(jsonRequest)
     }
 
-    private fun detectRogueDevices() {
-        try {
-            val networkInterfaces = NetworkInterface.getNetworkInterfaces()
-            val connectedDevices = mutableListOf<String>()
-
-            for (networkInterface in networkInterfaces) {
-                for (inetAddress in networkInterface.inetAddresses) {
-                    if (!inetAddress.isLoopbackAddress) {
-                        connectedDevices.add(inetAddress.hostAddress!!)
-                    }
-                }
-            }
-
-            if (connectedDevices.size > 1) {
-                securityText.text = "⚠️ Possible Intruders Detected on WiFi!"
-            } else {
-                securityText.text = "No Rogue Devices Found ✅"
-            }
-
-        } catch (e: SocketException) {
-            securityText.text = "Error Scanning Network"
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == 1 && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            checkPermissionsAndScan()
+        } else {
+            Toast.makeText(this, "Location permission is required for SSID info", Toast.LENGTH_SHORT).show()
         }
     }
 }
+

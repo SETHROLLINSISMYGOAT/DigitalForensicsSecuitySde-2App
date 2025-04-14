@@ -26,7 +26,28 @@
         android:max="100"
         android:progress="0"
         style="@android:style/Widget.ProgressBar.Horizontal"
-        android:layout_marginTop="20dp"/>
+        android:layout_marginTop="20dp" />
+
+    <TextView
+        android:id="@+id/tvCurrentFile"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Scanning file..."
+        android:textColor="@android:color/darker_gray"
+        android:textSize="14sp"
+        android:visibility="gone"
+        android:layout_marginTop="8dp" />
+
+    <TextView
+        android:id="@+id/tvThreatCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Threats Found: 0"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:layout_marginTop="10dp"
+        android:textColor="@android:color/white"
+        android:visibility="gone" />
 
     <TextView
         android:id="@+id/tvScanResult"
@@ -39,7 +60,16 @@
         android:paddingTop="20dp" />
 
     <Button
+        android:id="@+id/btnPauseResume"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="⏸ Pause"
+        android:layout_marginTop="10dp"
+        android:visibility="gone" />
+
+    <Button
         android:id="@+id/btnStartScan"
         style="@style/SecurityButton"
-        android:text="Start Full Scan" />
+        android:text="Start Full Scan"
+        android:layout_marginTop="20dp" />
 </LinearLayout>

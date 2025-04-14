@@ -1,21 +1,22 @@
 package com.example.bigtimeeegoantivirus
 
 import android.Manifest
+import android.app.*
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.os.*
 import android.provider.Settings
 import android.util.Log
 import android.view.View
-import android.widget.Button
-import android.widget.ProgressBar
-import android.widget.TextView
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import kotlinx.coroutines.*
 import okhttp3.OkHttpClient
-import okhttp3.Request
 import retrofit2.*
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
@@ -46,11 +47,9 @@ class CloudSecurityScanActivity : AppCompatActivity() {
         checkStoragePermission()
 
         btnStartScan.setOnClickListener {
-            Log.d("CloudSecurityScan", "Scan button clicked!")
             performRealTimeScan()
         }
     }
-
 
     private fun checkStoragePermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -59,12 +58,12 @@ class CloudSecurityScanActivity : AppCompatActivity() {
                 startActivity(intent)
             }
         } else {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), 1)
             }
         }
     }
-
 
     private fun performRealTimeScan() {
         btnStartScan.isEnabled = false
@@ -73,31 +72,46 @@ class CloudSecurityScanActivity : AppCompatActivity() {
         tvScanResult.visibility = View.GONE
 
         CoroutineScope(Dispatchers.IO).launch {
-            val startTime = System.currentTimeMillis()
-
             val fileHashes = scanFullStorageForHashes()
+
+            Log.d("CloudScan", "Total files to scan: ${fileHashes.size}")
 
             withContext(Dispatchers.Main) {
                 if (fileHashes.isEmpty()) {
                     tvScanStatus.text = "✅ No files found to scan!"
                     progressBar.visibility = View.GONE
                     btnStartScan.isEnabled = true
-                } else {
-                    tvScanStatus.text = "Scanning ${fileHashes.size} files..."
-                    progressBar.max = fileHashes.size
-                    progressBar.progress = 0
+                    return@withContext
+                }
 
-                    fileHashes.forEachIndexed { index, fileHash ->
-                        scanFileWithVirusTotal(fileHash)
-                        withContext(Dispatchers.Main) {
-                            progressBar.progress = index + 1
-                        }
-                    }
+                progressBar.max = fileHashes.size
+                progressBar.progress = 0
+            }
+
+            var malwareCount = 0
+
+            fileHashes.forEachIndexed { index, fileHash ->
+                Log.d("CloudScan", "Scanning hash #${index + 1}: $fileHash")
+
+                val isMalicious = scanFileWithVirusTotal(fileHash)
+                if (isMalicious) malwareCount++
+
+                withContext(Dispatchers.Main) {
+                    progressBar.progress = index + 1
+                    tvScanStatus.text = "Scanning file ${index + 1} of ${fileHashes.size}"
                 }
             }
 
-            val endTime = System.currentTimeMillis()
-            Log.d("CloudSecurityScan", "Total scan time: ${(endTime - startTime) / 1000}s")
+            withContext(Dispatchers.Main) {
+                tvScanStatus.text = if (malwareCount > 0) {
+                    "❌ $malwareCount malware(s) found!"
+                } else {
+                    "✅ No malware detected!"
+                }
+                tvScanResult.visibility = View.VISIBLE
+                progressBar.visibility = View.GONE
+                btnStartScan.isEnabled = true
+            }
         }
     }
 
@@ -119,7 +133,6 @@ class CloudSecurityScanActivity : AppCompatActivity() {
         return filesList
     }
 
-
     private fun getFileHash(file: File): String? {
         return try {
             val md = MessageDigest.getInstance("SHA-256")
@@ -132,51 +145,78 @@ class CloudSecurityScanActivity : AppCompatActivity() {
             inputStream.close()
             md.digest().joinToString("") { "%02x".format(it) }
         } catch (e: Exception) {
-            Log.e("CloudSecurityScan", "Error hashing file: ${file.name}", e)
+            Log.e("CloudScan", "Error hashing file: ${file.name}", e)
             null
         }
     }
 
-    private fun scanFileWithVirusTotal(fileHash: String) {
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val retrofit = Retrofit.Builder()
-                    .baseUrl("https://www.virustotal.com/api/v3/files/")
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .build()
+    private suspend fun scanFileWithVirusTotal(fileHash: String): Boolean {
+        return try {
+            val retrofit = Retrofit.Builder()
+                .baseUrl("https://www.virustotal.com/api/v3/files/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build()
 
-                val apiService = retrofit.create(VirusTotalApiService::class.java)
+            val apiService = retrofit.create(VirusTotalApiService::class.java)
 
-                val response = apiService.getFileReport(fileHash, "Bearer $virusTotalApiKey").execute()
+            val response = apiService.getFileReport(fileHash, "Bearer $virusTotalApiKey").execute()
 
-                withContext(Dispatchers.Main) {
-                    if (response.isSuccessful) {
-                        val result = response.body()
-                        if (result != null && result.data.attributes.lastAnalysisStats.malicious > 0) {
-                            tvScanStatus.text = "❌ Malware detected!"
-                            tvScanResult.text = "Malware found in hash: $fileHash"
-                            Log.d("CloudSecurityScan", "Malware detected: $fileHash")
-                        } else {
-                            tvScanStatus.text = "✅ No malware in $fileHash"
-                        }
-                    } else {
-                        tvScanStatus.text = "❌ Error scanning hash: $fileHash"
-                        Log.e("CloudSecurityScan", "API Response Error: ${response.errorBody()?.string()}")
+            if (response.isSuccessful) {
+                val result = response.body()
+                val maliciousCount = result?.data?.attributes?.lastAnalysisStats?.malicious ?: 0
+                if (maliciousCount > 0) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(this@CloudSecurityScanActivity, "⚠ Malware found!", Toast.LENGTH_LONG).show()
+                        showMalwareNotification(fileHash)
                     }
+                    return true
                 }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    tvScanStatus.text = "❌ Failed to connect to VirusTotal"
-                    Log.e("CloudSecurityScan", "API Call Failed", e)
-                }
+            } else {
+                Log.e("CloudScan", "API error: ${response.errorBody()?.string()}")
             }
+            false
+        } catch (e: Exception) {
+            Log.e("CloudScan", "API call failed", e)
+            false
         }
     }
 
+    private fun showMalwareNotification(fileHash: String) {
+        val channelId = "malware_alert_channel"
+        val channelName = "Malware Alerts"
+
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH).apply {
+                description = "Notifies when malware is found"
+                enableLights(true)
+                lightColor = Color.RED
+                enableVibration(true)
+            }
+            notificationManager.createNotificationChannel(channel)
+        }
+
+        val intent = Intent(this, CloudSecurityScanActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+
+        val notification = NotificationCompat.Builder(this, channelId)
+            .setSmallIcon(android.R.drawable.stat_sys_warning)
+            .setContentTitle("❌ Malware Detected")
+            .setContentText("Malicious file hash: $fileHash")
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
+            .build()
+
+        notificationManager.notify(fileHash.hashCode(), notification)
+    }
 
     interface VirusTotalApiService {
         @GET("{fileHash}")
-        fun getFileReport(@Path("fileHash") fileHash: String, @Header("x-apikey") apiKey: String): Call<VirusTotalResponse>
+        fun getFileReport(
+            @Path("fileHash") fileHash: String,
+            @Header("x-apikey") apiKey: String
+        ): Call<VirusTotalResponse>
     }
 
     data class VirusTotalResponse(

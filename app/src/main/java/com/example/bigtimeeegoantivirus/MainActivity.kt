@@ -1,13 +1,15 @@
 package com.example.bigtimeeegoantivirus
 
+
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import android.widget.Button
-import android.widget.EditText
 import android.widget.TextView
 
 class MainActivity : AppCompatActivity() {
+    @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -20,17 +22,19 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.btnHiddenFiles).setOnClickListener { openFileList("hidden") }
         findViewById<Button>(R.id.btnRecentFiles).setOnClickListener { openFileList("recent") }
         findViewById<Button>(R.id.btnApps).setOnClickListener { openFileList("apps") }
-        findViewById<Button>(R.id.btnAdvancedSecurity).setOnClickListener { openSecurityScreen() }
+
+        findViewById<Button>(R.id.btnAdvancedSecurity).setOnClickListener {
+            val intent = Intent(this, SecurityActivity::class.java)
+            startActivity(intent)
+        }
+
+
+
     }
 
     private fun openFileList(category: String) {
         val intent = Intent(this, FileListActivity::class.java)
         intent.putExtra("category", category)
-        startActivity(intent)
-    }
-
-    private fun openSecurityScreen() {
-        val intent = Intent(this, SecurityActivity::class.java)
         startActivity(intent)
     }
 }
