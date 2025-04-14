@@ -52,14 +52,16 @@ Use features like App Lock, WiFi Scan, and Threat Logs
 WORKING DISPLAY
 
 ![1744652265025](https://github.com/user-attachments/assets/84d1f8e9-8655-4eae-a629-78bdefd66777)
+![1744652265019](https://github.com/user-attachments/assets/81e8b369-fa4f-4d70-bec8-fb2f8ca2afe1)
 
+![1744652265013](https://github.com/user-attachments/assets/9d7fb29c-5f54-4177-ade5-186d7c9b7715)
+![1744652265006](https://github.com/user-attachments/assets/c5ec0783-d604-4baf-974c-614fc1ceaee2)
 
 ![image](https://github.com/user-attachments/assets/4364a53e-532b-41f8-b260-4e76784e37f4)
 ![image](https://github.com/user-attachments/assets/05f8974c-4e30-47de-b9bf-65777fb0a714)
 
 ![image](https://github.com/user-attachments/assets/efb641c7-5d4d-41a9-991b-fabbed6d0fba)
 ![image](https://github.com/user-attachments/assets/9031ff8d-52ba-4b31-ac59-3efcbccde99b)
-
 
 ![image](https://github.com/user-attachments/assets/f97143c4-ff92-4f07-af02-dc1b4f5a2926)
 ![image](https://github.com/user-attachments/assets/fa83e313-de78-4954-a43c-9f1da54173e4)
