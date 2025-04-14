@@ -60,7 +60,6 @@ WORKING DISPLAY
 
 
 ![image](https://github.com/user-attachments/assets/f97143c4-ff92-4f07-af02-dc1b4f5a2926)
-
 ![image](https://github.com/user-attachments/assets/fa83e313-de78-4954-a43c-9f1da54173e4)
 
 
